@@ -67,23 +67,23 @@ export var takePicture = function (options?): Promise<any> {
 
                 let appModule: typeof applicationModule = require("application");
 
-                let previousResult = appModule.android.onActivityResult;
-                appModule.android.onActivityResult = (requestCode: number, resultCode: number, data: android.content.Intent) => {
-                    appModule.android.onActivityResult = previousResult;
+                const resultHandler = (eventData: applicationModule.AndroidActivityResultEventData) => {
+                    appModule.android.off("activityResult", resultHandler);
 
-                    if (requestCode === REQUEST_IMAGE_CAPTURE && resultCode === android.app.Activity.RESULT_OK) {
+                    if (eventData.requestCode === REQUEST_IMAGE_CAPTURE &&
+                        eventData.resultCode === android.app.Activity.RESULT_OK) {
                         if (saveToGallery) {
                             try {
                                 let callback = new android.media.MediaScannerConnection.OnScanCompletedListener({
                                     onScanCompleted: function(path, uri) {
-                                        if (trace.enabled) {
+                                        if (trace.isEnabled()) {
                                             trace.write(`image from path ${path} has been successfully scanned!`, trace.categories.Debug);
                                         }
                                     }
                                 });
                                 android.media.MediaScannerConnection.scanFile(appModule.android.context, [picturePath], null, callback);
                             } catch (ex) {
-                                if (trace.enabled) {
+                                if (trace.isEnabled()) {
                                     trace.write(`An error occurred while scanning file ${picturePath}: ${ex.message}!`, trace.categories.Debug);
                                 }
                             }
@@ -98,6 +98,7 @@ export var takePicture = function (options?): Promise<any> {
                         resolve(asset);
                     }
                 };
+                appModule.android.on("activityResult", resultHandler);
 
                 appModule.android.foregroundActivity.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
 

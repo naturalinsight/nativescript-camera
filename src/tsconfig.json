@@ -11,7 +11,8 @@
         "noEmitHelpers": true,
         "experimentalDecorators": true,
         "lib": [
-            "es2016"
+            "es6",
+            "dom"
         ]
     },
     "filesGlob": [
