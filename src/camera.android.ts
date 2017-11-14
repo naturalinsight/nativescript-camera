@@ -10,6 +10,31 @@ import * as permissions from "nativescript-permissions";
 let REQUEST_IMAGE_CAPTURE = 3453;
 let REQUEST_REQUIRED_PERMISSIONS = 1234;
 
+var exifAttributes = [
+  android.media.ExifInterface.TAG_DATETIME,
+  android.media.ExifInterface.TAG_EXPOSURE_TIME,
+  android.media.ExifInterface.TAG_GPS_ALTITUDE,
+  android.media.ExifInterface.TAG_GPS_ALTITUDE_REF,
+  android.media.ExifInterface.TAG_GPS_DATESTAMP,
+  android.media.ExifInterface.TAG_GPS_LATITUDE,
+  android.media.ExifInterface.TAG_GPS_LATITUDE_REF,
+  android.media.ExifInterface.TAG_GPS_LONGITUDE,
+  android.media.ExifInterface.TAG_GPS_LONGITUDE_REF,
+  android.media.ExifInterface.TAG_GPS_PROCESSING_METHOD,
+  android.media.ExifInterface.TAG_GPS_TIMESTAMP,
+  android.media.ExifInterface.TAG_IMAGE_LENGTH,
+  android.media.ExifInterface.TAG_IMAGE_WIDTH,
+  android.media.ExifInterface.TAG_MAKE,
+  android.media.ExifInterface.TAG_MODEL,
+  android.media.ExifInterface.TAG_ORIENTATION
+];
+
+// these are added in api version 24
+if (platform.device.sdkVersion >= 23) {
+  exifAttributes.push(android.media.ExifInterface.TAG_DATETIME_ORIGINAL);
+  exifAttributes.push(android.media.ExifInterface.TAG_SOFTWARE);
+}
+
 export let takePicture = function (options?): Promise<any> {
     return new Promise((resolve, reject) => {
         try {
@@ -162,6 +187,28 @@ export let requestPermissions = function () {
     ]);
 };
 
+function applyExifData(path, exifData) {
+  var exif = new android.media.ExifInterface(path);
+  for (var key in exifData) {
+    if (exifData.hasOwnProperty(key)) {
+      exif.setAttribute(key, exifData[key]);
+    }
+  }
+  exif.saveAttributes();
+}
+
+function getOriginalExifData(path) {
+  var exif = new android.media.ExifInterface(path);
+  var exifData = {};
+  for (var i = 0; i < exifAttributes.length; i++) {
+    var value = exif.getAttribute(exifAttributes[i]);
+    if (value !== null) {
+      exifData[exifAttributes[i]] = value;
+    }
+  }
+  return exifData;
+}
+
 let createDateTimeStamp = function () {
     let result = "";
     let date = new Date();
@@ -176,6 +223,7 @@ let createDateTimeStamp = function () {
 };
 
 let rotateBitmap = function (picturePath, angle) {
+    var originalExifInfos = getOriginalExifData(picturePath);
     try {
         let matrix = new android.graphics.Matrix();
         matrix.postRotate(angle);
@@ -185,6 +233,7 @@ let rotateBitmap = function (picturePath, angle) {
             oldBitmap, 0, 0, oldBitmap.getWidth(), oldBitmap.getHeight(), matrix, true);
         let out = new java.io.FileOutputStream(picturePath);
         finalBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 100, out);
+        applyExifData(picturePath, originalExifInfos);
         out.flush();
         out.close();
     } catch (ex) {
