@@ -5,7 +5,6 @@ import * as imageSourceModule from "tns-core-modules/image-source/image-source";
 import * as imageAssetModule from "tns-core-modules/image-asset/image-asset";
 import * as trace from "tns-core-modules/trace/trace";
 import * as platform from "tns-core-modules/platform/platform";
-import * as permissions from "nativescript-permissions";
 
 let REQUEST_IMAGE_CAPTURE = 3453;
 let REQUEST_REQUIRED_PERMISSIONS = 1234;
@@ -156,10 +155,17 @@ export let isAvailable = function () {
 };
 
 export let requestPermissions = function () {
-    return permissions.requestPermissions([
-      (<any>android).Manifest.permission.WRITE_EXTERNAL_STORAGE,
-      (<any>android).Manifest.permission.CAMERA
-    ]);
+    if ((<any>android.support.v4.content.ContextCompat).checkSelfPermission(applicationModule.android.currentContext,
+        (<any>android).Manifest.permission.WRITE_EXTERNAL_STORAGE) !== android.content.pm.PackageManager.PERMISSION_GRANTED ||
+        (<any>android.support.v4.content.ContextCompat).checkSelfPermission(applicationModule.android.currentContext,
+            (<any>android).Manifest.permission.CAMERA) !== android.content.pm.PackageManager.PERMISSION_GRANTED) {
+
+        (<any>android.support.v4.app.ActivityCompat).requestPermissions(applicationModule.android.currentContext, [
+            (<any>android).Manifest.permission.CAMERA,
+            (<any>android).Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ],
+            REQUEST_REQUIRED_PERMISSIONS);
+    }
 };
 
 let createDateTimeStamp = function () {
