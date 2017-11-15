@@ -87,7 +87,7 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
                                             console.warn("Image asset returned was created more than 1 second ago");
                                         }
                                         imageAsset = new imageAssetModule.ImageAsset(asset);
-                                        imageAsset.exif = info.objectForKey(UIImagePickerControllerMediaMetadata);
+                                        (<any>imageAsset).exif = info.objectForKey(UIImagePickerControllerMediaMetadata);
                                         this.setImageAssetAndCallCallback(imageAsset);
                                     }
 
@@ -100,7 +100,7 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
                     }
                     else {
                         imageAsset = new imageAssetModule.ImageAsset(imageSourceResult.ios);
-                        imageAsset.exif = info.objectForKey(UIImagePickerControllerMediaMetadata);
+                        (<any>imageAsset).exif = info.objectForKey(UIImagePickerControllerMediaMetadata);
                         this.setImageAssetAndCallCallback(imageAsset);
                     }
                 }

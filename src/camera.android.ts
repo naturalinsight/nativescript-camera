@@ -30,9 +30,9 @@ var exifAttributes = [
 ];
 
 // these are added in api version 24
-if (platform.device.sdkVersion >= 23) {
-  exifAttributes.push(android.media.ExifInterface.TAG_DATETIME_ORIGINAL);
-  exifAttributes.push(android.media.ExifInterface.TAG_SOFTWARE);
+if (platform.device.sdkVersion >= "23") {
+  exifAttributes.push((<any>android).media.ExifInterface.TAG_DATETIME_ORIGINAL);
+  exifAttributes.push((<any>android).media.ExifInterface.TAG_SOFTWARE);
 }
 
 export let takePicture = function (options?): Promise<any> {
