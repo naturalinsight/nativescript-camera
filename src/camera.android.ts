@@ -30,7 +30,7 @@ var exifAttributes = [
 ];
 
 // these are added in api version 24
-if (platform.device.sdkVersion >= "23") {
+if (parseInt(platform.device.sdkVersion, 10) >= 24) {
   exifAttributes.push((<any>android).media.ExifInterface.TAG_DATETIME_ORIGINAL);
   exifAttributes.push((<any>android).media.ExifInterface.TAG_SOFTWARE);
 }
